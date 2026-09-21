@@ -1,15 +1,15 @@
 CREATE TABLE results (
     id BIGSERIAL PRIMARY KEY,
     event_id BIGINT NOT NULL,
-    team_id BIGINT NOT NULL,
+    entry_id BIGINT NOT NULL,
     school_id BIGINT NOT NULL,
     position INTEGER CHECK (position IS NULL OR position >= 1),  -- NULL = unscored, not ranked
     points NUMERIC(10,2),                                        -- NULL = unscored, or no mapping for this position
     total_score NUMERIC(10,2) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
-    CONSTRAINT uq_result_event_team
-        UNIQUE (event_id, team_id),
+    CONSTRAINT uq_result_event_entry
+        UNIQUE (event_id, entry_id),
 
     CONSTRAINT unscored_has_no_points
         CHECK (position IS NOT NULL OR points IS NULL),
@@ -19,9 +19,9 @@ CREATE TABLE results (
         REFERENCES events(id)
         ON DELETE CASCADE,
 
-    CONSTRAINT fk_team
-        FOREIGN KEY (team_id)
-        REFERENCES teams(id)
+    CONSTRAINT fk_entry
+        FOREIGN KEY (entry_id)
+        REFERENCES entries(id)
         ON DELETE CASCADE,
 
     CONSTRAINT fk_school

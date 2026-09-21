@@ -1,18 +1,18 @@
 CREATE TABLE scores (
     id BIGSERIAL PRIMARY KEY,
-    team_id BIGINT NOT NULL,
+    entry_id BIGINT NOT NULL,
     judge_id BIGINT NOT NULL,
     criteria_id BIGINT NOT NULL,
 
     score NUMERIC(10,2) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
-    CONSTRAINT uq_score_judge_team_criteria
-        UNIQUE (judge_id, team_id, criteria_id),
+    CONSTRAINT uq_score_judge_entry_criteria
+        UNIQUE (judge_id, entry_id, criteria_id),
 
-    CONSTRAINT fk_team
-        FOREIGN KEY (team_id)
-        REFERENCES teams(id)
+    CONSTRAINT fk_entry
+        FOREIGN KEY (entry_id)
+        REFERENCES entries(id)
         ON DELETE CASCADE,
 
     CONSTRAINT fk_judge
@@ -32,7 +32,7 @@ DECLARE
     event_status    TEXT;
     max_allowed     NUMERIC;
     is_judge        BOOLEAN;
-    team_event      BIGINT;
+    entry_event     BIGINT;
     criteria_event  BIGINT;
 BEGIN
     -- fetch event status, max score, and criteria event_id in one query
@@ -67,13 +67,13 @@ BEGIN
         MESSAGE = 'User is not a judge for this event';
     END IF;
 
-    -- team belongs to same event as criteria
-    SELECT event_id INTO team_event FROM teams WHERE id = NEW.team_id;
+    -- entry belongs to same event as criteria
+    SELECT event_id INTO entry_event FROM entries WHERE id = NEW.entry_id;
 
-    IF team_event IS DISTINCT FROM criteria_event THEN
-        RAISE EXCEPTION 
+    IF entry_event IS DISTINCT FROM criteria_event THEN
+        RAISE EXCEPTION
         USING ERRCODE = 'P0504',
-        MESSAGE = 'Team does not belong to the same event as criteria';
+        MESSAGE = 'Entry does not belong to the same event as criteria';
     END IF;
 
     RETURN NEW;
