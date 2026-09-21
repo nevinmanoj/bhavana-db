@@ -7,7 +7,7 @@ CREATE TABLE events (
     max_teams_per_school INTEGER NOT NULL,
     status TEXT NOT NULL
         CHECK (status IN ('draft', 'open', 'closed', 'finalized')),
-        -- TODO PHASE 2 registration_open, registration_closed
+        -- TODO PHASE 2 'registration_open', 'registration_closed' and if needed 'preparing'
     category TEXT NOT NULL
         CHECK (category IN ('HC', 'MC', 'PC')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -56,3 +56,19 @@ CREATE TRIGGER protect_event_after_draft_or_finalized
 BEFORE UPDATE ON events
 FOR EACH ROW
 EXECUTE FUNCTION protect_event_after_draft_or_finalized();
+
+CREATE OR REPLACE FUNCTION protect_finalized_event_delete()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF OLD.status = 'finalized' THEN
+        RAISE EXCEPTION USING ERRCODE = 'P0216',
+        MESSAGE = 'Event is "finalized" and cannot be deleted';
+    END IF;
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER protect_finalized_event_delete
+BEFORE DELETE ON events
+FOR EACH ROW
+EXECUTE FUNCTION protect_finalized_event_delete();
