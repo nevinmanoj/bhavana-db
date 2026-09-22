@@ -26,10 +26,10 @@ BEGIN
         SELECT status INTO old_event_status
         FROM events WHERE id = OLD.event_id;
 
-        IF old_event_status <> 'draft' THEN
+        IF old_event_status NOT IN ('draft','preparing') THEN
             RAISE EXCEPTION
             USING ERRCODE = 'P0208', 
-            MESSAGE = FORMAT('Event criteria can only be deleted when event is DRAFT. Current status: %s', old_event_status);
+            MESSAGE = FORMAT('Event criteria can only be deleted when event is DRAFT or PREPARING. Current status: %s', old_event_status);
         END IF;
 
         RETURN OLD;
@@ -42,10 +42,10 @@ BEGIN
         SELECT status INTO new_event_status
         FROM events WHERE id = NEW.event_id;
 
-          IF new_event_status <> 'draft' THEN
+          IF new_event_status NOT IN ('draft','preparing') THEN
             RAISE EXCEPTION
             USING ERRCODE = 'P0209',
-            MESSAGE = FORMAT('Event criteria can only be added when event is DRAFT. Current status: %s', new_event_status);
+            MESSAGE = FORMAT('Event criteria can only be added when event is DRAFT or PREPARING. Current status: %s', new_event_status);
         END IF;
         RETURN NEW;
     END IF;
@@ -59,10 +59,10 @@ BEGIN
         SELECT status INTO new_event_status
         FROM events WHERE id = NEW.event_id;
 
-        IF new_event_status <> 'draft' THEN
+        IF new_event_status NOT IN ('draft','preparing') THEN
             RAISE EXCEPTION
             USING ERRCODE = 'P0210',
-            MESSAGE = FORMAT('Event criteria can only be edited when event is DRAFT. Current status: %s', new_event_status);
+            MESSAGE = FORMAT('Event criteria can only be edited when event is DRAFT or PREPARING. Current status: %s', new_event_status);
         END IF;
 
         -- If event_id changed → treat as delete from old event
@@ -70,7 +70,7 @@ BEGIN
             SELECT status INTO old_event_status
             FROM events WHERE id = OLD.event_id;
 
-            IF old_event_status <> 'draft' THEN
+            IF old_event_status NOT IN ('draft','preparing') THEN
                 RAISE EXCEPTION
                 USING ERRCODE = 'P0211',
                 MESSAGE = FORMAT('Cannot move criteria FROM event with status: %s', old_event_status);

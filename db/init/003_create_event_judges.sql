@@ -33,10 +33,10 @@ BEGIN
         SELECT status INTO old_event_status
         FROM events WHERE id = OLD.event_id;
 
-        IF old_event_status <> 'draft' THEN
+        IF old_event_status NOT IN ('draft','preparing') THEN
             RAISE EXCEPTION
             USING ERRCODE = 'P0204', 
-            MESSAGE = FORMAT('Judges can only be removed when event is DRAFT. Current status: %s', old_event_status);
+            MESSAGE = FORMAT('Judges can only be removed when event is DRAFT or PREPARING. Current status: %s', old_event_status);
         END IF;
 
         RETURN OLD;
@@ -49,10 +49,10 @@ BEGIN
         SELECT status INTO new_event_status
         FROM events WHERE id = NEW.event_id;
 
-        IF new_event_status NOT IN ('draft','open','closed') THEN
+        IF new_event_status NOT IN ('draft','preparing','open','closed') THEN
             RAISE EXCEPTION
              USING ERRCODE = 'P0205', 
-            MESSAGE = FORMAT('Judges can only be added when event is DRAFT, OPEN or CLOSED. Current status: %s', new_event_status);
+            MESSAGE = FORMAT('Judges can only be added when event is DRAFT, PREPARING, OPEN or CLOSED. Current status: %s', new_event_status);
         END IF;
 
         RETURN NEW;
@@ -67,7 +67,7 @@ BEGIN
         SELECT status INTO new_event_status
         FROM events WHERE id = NEW.event_id;
 
-        IF new_event_status NOT IN ('draft','open','closed') THEN
+        IF new_event_status NOT IN ('draft','preparing','open','closed') THEN
             RAISE EXCEPTION
             USING ERRCODE = 'P0206', 
             MESSAGE = FORMAT('Cannot move/update judge to event with status: %s', new_event_status);
@@ -78,7 +78,7 @@ BEGIN
             SELECT status INTO old_event_status
             FROM events WHERE id = OLD.event_id;
 
-            IF old_event_status <> 'draft' THEN
+            IF old_event_status NOT IN ('draft','preparing') THEN
                 RAISE EXCEPTION
                 USING ERRCODE = 'P0207', 
                 MESSAGE = FORMAT('Cannot move judge FROM event with status: %s', old_event_status);
