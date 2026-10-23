@@ -6,5 +6,7 @@ CREATE TABLE users (
     role TEXT NOT NULL
         CHECK (role IN ('admin', 'judge','school_admin')),
         -- TODO , host(manage events and entries)
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT email_normalized CHECK (email = lower(btrim(email)))
 );
