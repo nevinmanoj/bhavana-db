@@ -51,8 +51,9 @@ BEGIN
         MESSAGE = 'School of student does not match school of entry';
     END IF;
 
-    -- category match
-    IF event_category IS DISTINCT FROM student_category THEN
+    -- category match (COMMON events accept students of every category)
+    IF event_category <> 'COMMON'
+       AND event_category IS DISTINCT FROM student_category THEN
         RAISE EXCEPTION
         USING ERRCODE = 'P0405',
         MESSAGE = 'Category of student does not match event category';

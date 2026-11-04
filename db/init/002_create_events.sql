@@ -15,8 +15,9 @@ CREATE TABLE events (
             'closed',
             'finalized'
         )),
+    -- COMMON events are open to students of every category.
     category TEXT NOT NULL
-        CHECK (category IN ('HC', 'MC', 'PC')),
+        CHECK (category IN ('HI', 'MC', 'PC', 'COMMON')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     CONSTRAINT valid_member_range
