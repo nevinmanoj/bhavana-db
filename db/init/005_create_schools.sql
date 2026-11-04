@@ -15,6 +15,8 @@ CREATE TABLE schools (
     participants_pc INT NOT NULL CHECK (participants_pc >= 0),
     participants_hi INT NOT NULL CHECK (participants_hi >= 0),
     non_participants INT NOT NULL CHECK (non_participants >= 0),
+    total_staff INT NOT NULL CHECK (total_staff >= 0),
+    total_parents INT NOT NULL CHECK (total_parents >= 0),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     CONSTRAINT fk_school_admin
