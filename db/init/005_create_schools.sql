@@ -6,7 +6,7 @@ CREATE TABLE schools (
     contact_name TEXT NOT NULL,
     contact_phone TEXT NOT NULL,
     contact_email TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'accepted'
+    status TEXT NOT NULL DEFAULT 'in_review'
         CHECK (status IN ('in_review', 'accepted')),
     principal_name TEXT NOT NULL,
     principal_phone TEXT NOT NULL,
@@ -24,14 +24,3 @@ CREATE TABLE schools (
         REFERENCES users(id)
         ON DELETE SET NULL
 );
-
--- single row of admin-controlled switches
-CREATE TABLE app_settings (
-    id BOOLEAN PRIMARY KEY DEFAULT TRUE CHECK (id),
-    -- can schools sign up at /register?
-    school_registration_open BOOLEAN NOT NULL DEFAULT FALSE,
-    -- can school admins add, edit and delete students? admins always can
-    student_registration_open BOOLEAN NOT NULL DEFAULT FALSE,
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-INSERT INTO app_settings DEFAULT VALUES;
