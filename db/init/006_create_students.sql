@@ -2,7 +2,7 @@ CREATE TABLE students (
     id BIGSERIAL PRIMARY KEY,
     school_id BIGINT NOT NULL,
     name TEXT NOT NULL,
-    age INTEGER NOT NULL,
+    dob DATE,
     category TEXT NOT NULL
         CHECK (category IN ('HI', 'MC', 'PC')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
