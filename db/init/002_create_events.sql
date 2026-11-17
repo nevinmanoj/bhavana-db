@@ -18,6 +18,10 @@ CREATE TABLE events (
     -- COMMON events are open to students of every category.
     category TEXT NOT NULL
         CHECK (category IN ('HI', 'MC', 'PC', 'COMMON')),
+    -- JR / SR events only take students of that age group (see
+    -- student_age_group in 008_create_entry_members.sql); BOTH takes any age.
+    age_group TEXT NOT NULL DEFAULT 'BOTH'
+        CHECK (age_group IN ('JR', 'SR', 'BOTH')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     CONSTRAINT valid_member_range
@@ -61,6 +65,7 @@ BEGIN
     IF OLD.status <> 'draft' THEN
         IF NEW.title        <> OLD.title OR
            NEW.category     <> OLD.category OR
+           NEW.age_group    <> OLD.age_group OR
            NEW.description  <> OLD.description OR
            NEW.max_entries_per_school    <> OLD.max_entries_per_school OR
            NEW.min_members <> OLD.min_members OR

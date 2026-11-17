@@ -18,11 +18,26 @@ CREATE TABLE entry_members (
 );
 
 
+-- Junior (JR) is under 13 on 01-01-2027, i.e. born after 01-01-2014; everyone
+-- else is Senior (SR). NULL when the DOB isn't recorded. The cutoff changes
+-- every year: update it here and in the frontend's content file together.
+CREATE OR REPLACE FUNCTION student_age_group(dob DATE)
+RETURNS TEXT AS $$
+    SELECT CASE
+        WHEN dob IS NULL THEN NULL
+        WHEN dob > DATE '2014-01-01' THEN 'JR'
+        ELSE 'SR'
+    END;
+$$ LANGUAGE sql IMMUTABLE;
+
+
 CREATE OR REPLACE FUNCTION validate_student_for_entry()
 RETURNS TRIGGER AS $$
 DECLARE
     event_category     TEXT;
     student_category   TEXT;
+    event_age_group    TEXT;
+    student_dob        DATE;
     entry_school_id     BIGINT;
     student_school_id  BIGINT;
     entry_event_id      BIGINT;
@@ -32,15 +47,15 @@ DECLARE
     current_entry_size  INTEGER;
 BEGIN
     -- fetch entry school and event info in one query
-    SELECT t.school_id, e.category, t.event_id, e.max_members, e.min_members
-    INTO entry_school_id, event_category, entry_event_id, max_size, min_size
+    SELECT t.school_id, e.category, e.age_group, t.event_id, e.max_members, e.min_members
+    INTO entry_school_id, event_category, event_age_group, entry_event_id, max_size, min_size
     FROM entries t
     JOIN events e ON e.id = t.event_id
     WHERE t.id = NEW.entry_id;
 
     -- fetch student school and category
-    SELECT school_id, category
-    INTO student_school_id, student_category
+    SELECT school_id, category, dob
+    INTO student_school_id, student_category, student_dob
     FROM students
     WHERE id = NEW.student_id;
 
@@ -57,6 +72,15 @@ BEGIN
         RAISE EXCEPTION
         USING ERRCODE = 'P0405',
         MESSAGE = 'Category of student does not match event category';
+    END IF;
+
+    -- age group match (BOTH events accept any age). A student with no DOB has
+    -- no age group, so they fail this check for JR and SR events.
+    IF event_age_group <> 'BOTH'
+       AND event_age_group IS DISTINCT FROM student_age_group(student_dob) THEN
+        RAISE EXCEPTION
+        USING ERRCODE = 'P0412',
+        MESSAGE = 'Age group of student does not match event age group';
     END IF;
 
     -- student already in another entry for the same event
